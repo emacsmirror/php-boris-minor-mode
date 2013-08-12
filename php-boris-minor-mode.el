@@ -59,7 +59,7 @@ they can be in either order."
     (comint-send-string repl form)
     (comint-send-string repl "\n")))
 
-;;;###Autoload
+;;;###autoload
 (define-minor-mode php-boris-minor-mode
   "PHP boris minor mode.
      Interactively with no argument, this command toggles the mode.
