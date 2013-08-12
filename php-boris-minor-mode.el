@@ -13,6 +13,8 @@
 
 ;;; Code:
 
+(require 'php-boris)
+
 (defun php-boris-eval-region (start end)
   "Evaluate the region.
 The two arguments START and END are character positions;
@@ -68,8 +70,7 @@ they can be in either order."
      When the minor mode is enabled, it adds several commands to
      interact with the Boris PHP REPL."
   :group 'php-boris
-  :require 'php-boris
-  :lighter " Brs"
+  :lighter " brs"
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c") 'php-boris-eval-expression-at-point)
             map)
@@ -79,5 +80,4 @@ they can be in either order."
 (add-hook 'php-mode-hook 'php-boris-minor-mode)
 
 (provide 'php-boris-minor-mode)
-
 ;;; php-boris-minor-mode.el ends here
