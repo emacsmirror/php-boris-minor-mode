@@ -48,10 +48,12 @@ they can be in either order."
 (defun php-boris-interactive-eval (form)
   "Evaluate the given FORM and print value in minibuffer."
   (let ((buffer (current-buffer))
-        (repl (progn
-                (php-boris)
-                (current-buffer))))
-    (pop-to-buffer buffer)
+        (repl (get-process php-boris-process-name)))
+    (unless repl
+      (php-boris)
+      (setq repl (current-buffer))
+      (sit-for 0.1 t)
+      (pop-to-buffer buffer))
     (comint-send-string repl form)
     (comint-send-string repl "\n")))
 
