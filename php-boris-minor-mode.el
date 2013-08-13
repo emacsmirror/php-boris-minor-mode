@@ -27,6 +27,13 @@ they can be in either order."
   (interactive)
   (php-boris-eval-region (point-min) (point-max)))
 
+(defun php-boris-eval-defun ()
+  "Evaluate the current function."
+  (interactive)
+  (let ((start (save-excursion (php-beginning-of-defun) (point)))
+        (end (save-excursion (php-end-of-defun) (point))))
+    (php-boris-eval-region start end)))
+
 (defun php-boris-expression-at-point ()
   "Return the text of the expr at point."
   (apply #'buffer-substring-no-properties
@@ -41,23 +48,34 @@ they can be in either order."
         (c-beginning-of-statement-1)
         (list (point) end)))))
 
-(defun php-boris-eval-expression-at-point ()
-  "Evaluate the current toplevel form, and print result in the mini-buffer."
-  (interactive)
-  (let ((form (php-boris-expression-at-point)))
+(defun php-boris-eval-dwim (&optional start end)
+  "Print and evaluate the current statement in Boris PHP REPL.
+With active region print and evaluate the text in the region. The
+two arguments START and END are character positions; they can be
+in either order."
+  (interactive "r")
+  (let ((form (if (and (region-active-p) start end)
+                  (buffer-substring-no-properties start end)
+                (php-boris-expression-at-point))))
     (php-boris-interactive-eval form)))
 
 (defun php-boris-interactive-eval (form)
   "Evaluate the given FORM and print value in minibuffer."
   (let ((buffer (current-buffer))
         (repl (get-process php-boris-process-name)))
-    (unless repl
+    (if repl
+        (display-buffer (process-buffer repl))
       (php-boris)
       (setq repl (current-buffer))
       (sit-for 0.1 t)
       (pop-to-buffer buffer))
-    (comint-send-string repl form)
+    (comint-send-string repl (php-boris-clean-php-code form))
     (comint-send-string repl "\n")))
+
+(defun php-boris-clean-php-code (code)
+  (if (string-prefix-p "<?php" code t)
+      (substring code 5)
+    code))
 
 ;;;###autoload
 (define-minor-mode php-boris-minor-mode
@@ -72,7 +90,10 @@ they can be in either order."
   :group 'php-boris
   :lighter " brs"
   :keymap (let ((map (make-sparse-keymap)))
-            (define-key map (kbd "C-c C-c") 'php-boris-eval-expression-at-point)
+            (define-key map (kbd "C-c C-c") 'php-boris-eval-dwim)
+            (define-key map (kbd "C-c C-k") 'php-boris-eval-buffer)
+            (define-key map (kbd "C-c C-r") 'php-boris-eval-region)
+            (define-key map (kbd "C-M-x") 'php-boris-eval-defun)
             map)
   )
 

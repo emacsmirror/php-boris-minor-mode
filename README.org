@@ -43,6 +43,18 @@ Load/evaluate the code and require =php-boris-minor-mode.el=
 
 *** Usage
 
-Open a PHP buffer in Emacs and press =C-c C-c= on a line to send that to Boris. The REPL will pop up and you can see the result there.
+Open a PHP buffer in Emacs and press =C-c C-c= on a line to send that to Boris. The REPL will pop up and you can see the result there. If a region is active it will send that to the REPL.
+
+**** Available shortcuts:
+
+| Keyboard shortcut | Description                                                                 |
+|-------------------+-----------------------------------------------------------------------------|
+| C-c C-c           | Evaluate either the current statement or the active region (do what I mean) |
+| C-c C-k           | Evaluate the current buffer in the REPL                                     |
+| C-c C-r           | Evaluate the the active region                                              |
+| C-M-x             | Evaluate the function at point                                              |
+
+
+
 
 
