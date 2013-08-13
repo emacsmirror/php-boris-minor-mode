@@ -48,14 +48,12 @@ they can be in either order."
         (c-beginning-of-statement-1)
         (list (point) end)))))
 
-(defun php-boris-eval-dwim (&optional start end)
+(defun php-boris-eval-dwim ()
   "Print and evaluate the current statement in Boris PHP REPL.
-With active region print and evaluate the text in the region. The
-two arguments START and END are character positions; they can be
-in either order."
-  (interactive "r")
-  (let ((form (if (and (region-active-p) start end)
-                  (buffer-substring-no-properties start end)
+With active region print and evaluate the text in the region."
+  (interactive)
+  (let ((form (if (region-active-p)
+                  (buffer-substring-no-properties (region-beginning) (region-end))
                 (php-boris-expression-at-point))))
     (php-boris-interactive-eval form)))
 
