@@ -43,6 +43,7 @@ they can be in either order."
   "Return the start and end position of defun at point."
   (save-excursion
     (save-match-data
+      (beginning-of-line)
       (c-end-of-statement)
       (let ((end (point)))
         (c-beginning-of-statement-1)
