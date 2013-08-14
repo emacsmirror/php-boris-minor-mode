@@ -3,6 +3,7 @@
 ;; Copyright (C) 2013 steckerhalter
 
 ;; Author: steckerhalter
+;; URL: https://github.com/steckerhalter/php-boris-minor-mode
 ;; Package-Requires: ((php-boris "0.0.1"))
 ;; Keywords: php repl eval
 
@@ -40,7 +41,7 @@ they can be in either order."
          (php-boris-region-for-expression-at-point)))
 
 (defun php-boris-region-for-expression-at-point ()
-  "Return the start and end position of defun at point."
+  "Return the start and end position of statement at point."
   (save-excursion
     (save-match-data
       (when (equal (char-before) ?\;) (backward-char))
@@ -60,16 +61,19 @@ With active region print and evaluate the text in the region."
 
 (defun php-boris-interactive-eval (form)
   "Evaluate the given FORM and print value in minibuffer."
-  (let ((buffer (current-buffer))
-        (repl (get-process php-boris-process-name)))
-    (if repl
-        (display-buffer (process-buffer repl))
+  (let* ((buffer (current-buffer))
+         (process (get-process php-boris-process-name))
+         (repl-buffer (when process (process-buffer process))))
+    (if process
+        (set-window-point
+         (display-buffer repl-buffer)
+         (1+ (buffer-size repl-buffer)))
       (php-boris)
-      (setq repl (current-buffer))
+      (setq repl-buffer (current-buffer))
       (sit-for 0.1 t)
       (pop-to-buffer buffer))
-    (comint-send-string repl (php-boris-clean-php-code form))
-    (comint-send-string repl "\n")))
+    (comint-send-string repl-buffer (php-boris-clean-php-code form))
+    (comint-send-string repl-buffer "\n")))
 
 (defun php-boris-clean-php-code (code)
   (if (string-prefix-p "<?php" code t)
