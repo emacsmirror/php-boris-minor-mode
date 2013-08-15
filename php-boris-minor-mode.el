@@ -111,6 +111,45 @@ the repl. Return the repl buffer."
       (substring code 5)
     code))
 
+(defun php-boris-goto-source ()
+  "Go the source code definition of the object at point."
+  (interactive)
+  (let* (output
+         (repl-buffer (php-boris-get-repl))
+         (word (current-word))
+         (code (format
+                "
+if (is_object(%s)) {
+    $r = new ReflectionObject(%s);
+    $json = json_encode(
+        array(
+            'filename' => $r->getFileName(),
+            'line' => $r->getStartLine()
+        )
+    );
+    print \"{{{$json}}}\";
+}
+" word word)))
+    (setq output
+          (with-temp-buffer
+            (comint-redirect-send-command-to-process code (current-buffer) repl-buffer nil t)
+            (sit-for 0.2 t)
+            (goto-char (point-max))
+            (re-search-backward "{{\\({.*?}\\)}}" nil t)
+            (match-string 1)))
+    (if (or (null output) (string= "{$json}" output))
+        (message "No source file found for `%s'" word)
+      (let* ((json-object-type 'hash-table)
+             (hash (json-read-from-string output))
+             (filename (gethash "filename" hash))
+             (line (gethash "line" hash)))
+        (if (null filename)
+            (message "No source file found for `%s'" word)
+          (find-file-existing filename)
+          (goto-line line)
+          (message "Found definition for `%s' in file `%s' on line %s" word filename line)
+          )))))
+
 (defcustom php-boris-eval-flash-duration 0.4
   "*Duration the evaluated expession should be highlighted.
 When set to 0 the flashing will be disabled."
@@ -156,6 +195,7 @@ The keys largely correspond to what nrepl uses, see
             (define-key map (kbd "C-c C-k") 'php-boris-eval-buffer)
             (define-key map (kbd "C-c C-r") 'php-boris-eval-region)
             (define-key map (kbd "C-c C-z") 'php-boris-switch-to-repl)
+            (define-key map (kbd "C-c C-s") 'php-boris-goto-source)
             (define-key map (kbd "C-M-x") 'php-boris-eval-defun)
             map)
   )
