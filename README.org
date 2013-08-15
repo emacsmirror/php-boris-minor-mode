@@ -52,6 +52,7 @@ Open a PHP buffer in Emacs and press =C-c C-c= on a line to send that to Boris. 
 | C-c C-c           | Evaluate either the current statement or the active region (do what I mean) |
 | C-c C-k           | Evaluate the current buffer in the REPL                                     |
 | C-c C-r           | Evaluate the the active region                                              |
+| C-c C-z           | Switch to the REPL buffer, opening a new REPL if none exists                |
 | C-M-x             | Evaluate the function at point                                              |
 
 

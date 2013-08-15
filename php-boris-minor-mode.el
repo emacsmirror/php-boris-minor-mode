@@ -1,4 +1,4 @@
-;;; php-boris-minor-mode.el --- a minor mode to evaluate PHP code in the Boris PHP REPL"
+;;; php-boris-minor-mode.el --- a minor mode to evaluate PHP code in the Boris PHP repl"
 
 ;; Copyright (C) 2013 steckerhalter
 
@@ -10,7 +10,7 @@
 ;;; Commentary:
 
 ;; Adds a few keyboard shortcuts to `php-mode' (e.g. C-c C-c) to send
-;; code from a PHP buffer to the Boris PHP REPL and evaluate it there.
+;; code from a PHP buffer to the Boris PHP repl and evaluate it there.
 
 ;;; Code:
 
@@ -58,22 +58,55 @@ With active region print and evaluate the text in the region."
 (defun php-boris-interactive-eval (start end form)
   "Evaluate the given FORM in the PHP REPL."
   (let* ((buffer (current-buffer))
-         (process (get-process php-boris-process-name))
-         (repl-buffer (when process (process-buffer process))))
-    (if process
-        (set-window-point
-         (display-buffer repl-buffer)
-         (1+ (buffer-size repl-buffer)))
-      (php-boris)
-      (setq repl-buffer (current-buffer))
-      (sit-for 0.1 t)
-      (pop-to-buffer buffer))
+         (repl-buffer (php-boris-get-repl t)))
     (comint-send-string repl-buffer (php-boris-clean-php-code form))
     (comint-send-string repl-buffer "\n")
     (unless (= php-boris-eval-flash-duration 0)
       (php-boris-eval-flash start end))))
 
+(defun php-boris-get-repl (&optional show focus)
+  "Get the existing repl or create new one and return the repl buffer.
+If SHOW is t make the repl visible. If FOCUS is t show and focus
+the repl."
+  (interactive)
+  (let ((process (get-process php-boris-process-name)))
+    (if process (php-boris-get-repl-with-process process show focus)
+      (php-boris-get-repl-create show focus)
+      )))
+
+(defun php-boris-get-repl-create (&optional show focus)
+  "Create a new Boris repl.
+If SHOW is t make the repl visible. If FOCUS is t show and focus
+the repl. Return the repl buffer."
+  (let ((buffer (current-buffer)))
+    (cond
+     (show (let ((repl-buffer (progn (php-boris) (current-buffer))))
+             (sit-for 0.1 t)
+             (pop-to-buffer buffer)
+             repl-buffer))
+     (focus (progn (php-boris)
+                   (current-buffer)))
+     (save-window-excursion
+       (php-boris)
+       (current-buffer)))
+    ))
+
+(defun php-boris-get-repl-with-process (process &optional show focus)
+  "Get the Boris repl from the process.
+ If SHOW is t make the repl visible. If FOCUS is t show and focus
+the repl. Return the repl buffer."
+  (let ((repl-buffer (process-buffer process)))
+    (cond
+     (show (set-window-point
+            (display-buffer repl-buffer)
+            (1+ (buffer-size repl-buffer))))
+     (focus (php-boris))
+     )
+    repl-buffer)
+  )
+
 (defun php-boris-clean-php-code (code)
+  "Remove the php tag if it prefixes CODE."
   (if (string-prefix-p "<?php" code t)
       (substring code 5)
     code))
@@ -97,22 +130,32 @@ If FACE and DURATION are given use these, otherwise the defaults."
     (hlt-highlight-region start end face)
     (run-at-time duration nil #'hlt-unhighlight-region start end face)))
 
+(defun php-boris-switch-to-repl ()
+  "Switch to the repl making it visible if it is hidden."
+  (interactive)
+  (php-boris-get-repl nil t)
+  )
+
 ;;;###autoload
 (define-minor-mode php-boris-minor-mode
   "PHP boris minor mode.
-     Interactively with no argument, this command toggles the mode.
-     A positive prefix argument enables the mode, any other prefix
-     argument disables it.  From Lisp, argument omitted or nil enables
-     the mode, `toggle' toggles the state.
+Interactively with no argument, this command toggles the mode.  A
+positive prefix argument enables the mode, any other prefix
+argument disables it.  From Lisp, argument omitted or nil enables
+the mode, `toggle' toggles the state.
 
-     When the minor mode is enabled, it adds several commands to
-     interact with the Boris PHP REPL."
+When the minor mode is enabled, it adds several commands to
+interact with the Boris PHP REPL.
+
+The keys largely correspond to what nrepl uses, see
+`https://github.com/clojure-emacs/nrepl.el'"
   :group 'php-boris
   :lighter " brs"
   :keymap (let ((map (make-sparse-keymap)))
             (define-key map (kbd "C-c C-c") 'php-boris-eval-dwim)
             (define-key map (kbd "C-c C-k") 'php-boris-eval-buffer)
             (define-key map (kbd "C-c C-r") 'php-boris-eval-region)
+            (define-key map (kbd "C-c C-z") 'php-boris-switch-to-repl)
             (define-key map (kbd "C-M-x") 'php-boris-eval-defun)
             map)
   )
