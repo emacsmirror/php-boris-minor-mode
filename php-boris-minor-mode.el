@@ -117,7 +117,7 @@ When set to 0 the flashing will be disabled."
   :type 'number
   :group 'php-boris)
 
-(defcustom php-boris-eval-flash-face nil
+(defcustom php-boris-eval-flash-face 'region
   "*Face to use for showing the region during the evaluation."
   :type 'face
   :group 'php-boris)
