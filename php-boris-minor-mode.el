@@ -70,7 +70,8 @@ With active region print and evaluate the text in the region."
       (pop-to-buffer buffer))
     (comint-send-string repl-buffer (php-boris-clean-php-code form))
     (comint-send-string repl-buffer "\n")
-    (php-boris-eval-flash start end)))
+    (unless (= php-boris-eval-flash-duration 0)
+      (php-boris-eval-flash start end))))
 
 (defun php-boris-clean-php-code (code)
   (if (string-prefix-p "<?php" code t)
@@ -78,7 +79,8 @@ With active region print and evaluate the text in the region."
     code))
 
 (defcustom php-boris-eval-flash-duration 0.4
-  "*Duration the evaluated expession should be highlighted."
+  "*Duration the evaluated expession should be highlighted.
+When set to 0 the flashing will be disabled."
   :type 'number
   :group 'php-boris)
 
