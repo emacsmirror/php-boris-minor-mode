@@ -4,7 +4,7 @@
 
 ;; Author: steckerhalter
 ;; URL: https://github.com/steckerhalter/php-boris-minor-mode
-;; Package-Requires: ((php-boris "0.0.1"))
+;; Package-Requires: ((php-boris "0.0.1") (highlight))
 ;; Keywords: php repl eval
 
 ;;; Commentary:
@@ -15,13 +15,14 @@
 ;;; Code:
 
 (require 'php-boris)
+(require 'highlight)
 
 (defun php-boris-eval-region (start end)
   "Evaluate the region.
 The two arguments START and END are character positions;
 they can be in either order."
   (interactive "r")
-  (php-boris-interactive-eval (buffer-substring-no-properties start end)))
+  (php-boris-interactive-eval start end (buffer-substring-no-properties start end)))
 
 (defun php-boris-eval-buffer ()
   "Evaluate the current buffer."
@@ -34,11 +35,6 @@ they can be in either order."
   (let ((start (save-excursion (php-beginning-of-defun) (point)))
         (end (save-excursion (php-end-of-defun) (point))))
     (php-boris-eval-region start end)))
-
-(defun php-boris-expression-at-point ()
-  "Return the text of the expr at point."
-  (apply #'buffer-substring-no-properties
-         (php-boris-region-for-expression-at-point)))
 
 (defun php-boris-region-for-expression-at-point ()
   "Return the start and end position of statement at point."
@@ -54,13 +50,13 @@ they can be in either order."
   "Print and evaluate the current statement in Boris PHP REPL.
 With active region print and evaluate the text in the region."
   (interactive)
-  (let ((form (if (region-active-p)
-                  (buffer-substring-no-properties (region-beginning) (region-end))
-                (php-boris-expression-at-point))))
-    (php-boris-interactive-eval form)))
+  (let ((region (if (region-active-p)
+                    (list (region-beginning) (region-end))
+                  (php-boris-region-for-expression-at-point))))
+    (apply #'php-boris-eval-region region)))
 
-(defun php-boris-interactive-eval (form)
-  "Evaluate the given FORM and print value in minibuffer."
+(defun php-boris-interactive-eval (start end form)
+  "Evaluate the given FORM in the PHP REPL."
   (let* ((buffer (current-buffer))
          (process (get-process php-boris-process-name))
          (repl-buffer (when process (process-buffer process))))
@@ -73,12 +69,31 @@ With active region print and evaluate the text in the region."
       (sit-for 0.1 t)
       (pop-to-buffer buffer))
     (comint-send-string repl-buffer (php-boris-clean-php-code form))
-    (comint-send-string repl-buffer "\n")))
+    (comint-send-string repl-buffer "\n")
+    (php-boris-eval-flash start end)))
 
 (defun php-boris-clean-php-code (code)
   (if (string-prefix-p "<?php" code t)
       (substring code 5)
     code))
+
+(defcustom php-boris-eval-flash-duration 0.4
+  "*Duration the evaluated expession should be highlighted."
+  :type 'number
+  :group 'php-boris)
+
+(defcustom php-boris-eval-flash-face nil
+  "*Face to use for showing the region during the evaluation."
+  :type 'face
+  :group 'php-boris)
+
+(defun php-boris-eval-flash (start end &optional face duration)
+  "Flash the given region form START to END.
+If FACE and DURATION are given use these, otherwise the defaults."
+  (let ((face (if face face php-boris-eval-flash-face))
+        (duration (if duration duration php-boris-eval-flash-duration)))
+    (hlt-highlight-region start end face)
+    (run-at-time duration nil #'hlt-unhighlight-region start end face)))
 
 ;;;###autoload
 (define-minor-mode php-boris-minor-mode
