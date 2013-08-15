@@ -86,9 +86,9 @@ the repl. Return the repl buffer."
              repl-buffer))
      (focus (progn (php-boris)
                    (current-buffer)))
-     (save-window-excursion
-       (php-boris)
-       (current-buffer)))
+     (t (save-window-excursion
+          (php-boris)
+          (current-buffer))))
     ))
 
 (defun php-boris-get-repl-with-process (process &optional show focus)
