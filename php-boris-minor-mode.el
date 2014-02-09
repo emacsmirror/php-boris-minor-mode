@@ -1,4 +1,4 @@
-;;; php-boris-minor-mode.el --- a minor mode to evaluate PHP code in the Boris PHP repl"
+;;; php-boris-minor-mode.el --- a minor mode to evaluate PHP code in the Boris repl
 
 ;; Copyright (C) 2013 steckerhalter
 
