@@ -12,6 +12,10 @@
 ;; Adds a few keyboard shortcuts to `php-mode' (e.g. C-c C-c) to send
 ;; code from a PHP buffer to the Boris PHP repl and evaluate it there.
 
+;; To enable, enable `php-boris-minor-mode' in `php-mode':
+
+;;     (add-hook 'php-mode-hook 'php-boris-minor-mode)
+
 ;;; Code:
 
 (require 'php-boris)
@@ -199,9 +203,6 @@ The keys largely correspond to what nrepl uses, see
             (define-key map (kbd "C-M-x") 'php-boris-eval-defun)
             map)
   )
-
-;;;###autoload
-(add-hook 'php-mode-hook 'php-boris-minor-mode)
 
 (provide 'php-boris-minor-mode)
 ;;; php-boris-minor-mode.el ends here
