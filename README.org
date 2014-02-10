@@ -22,6 +22,18 @@ An Emacs minor mode that adds keyboard shortcuts to =php-mode= to send code from
 
 *** Installation
 
+**** MELPA
+
+=php-boris-minor-mode= is on [[http://melpa.milkbox.net/][MELPA]]. First setup the package archive and then install the package: =M-x package-list-packages=, select =php-boris-minor-mode== from the list by pressing =i=, then press =x= to execute the changes.
+
+**** El-Get Recipe
+
+#+BEGIN_SRC emacs-lisp
+  (:name php-boris-minor-mode
+         :type git
+         :url "https://github.com/steckerhalter/php-boris-minor-mode")
+#+END_SRC
+
 **** Manually
 
 Load/evaluate the code and require =php-boris-minor-mode.el=
@@ -33,13 +45,14 @@ Load/evaluate the code and require =php-boris-minor-mode.el=
   (require 'php-boris-minor-mode)
 #+END_SRC
 
-**** El-Get Recipe
+*** Setup
+
+Add the minor mode to the php-mode hook to enable it automatically:
 
 #+BEGIN_SRC emacs-lisp
-  (:name php-boris-minor-mode
-         :type git
-         :url "https://github.com/steckerhalter/php-boris-minor-mode")
+(add-hook 'php-mode-hook 'php-boris-minor-mode)
 #+END_SRC
+
 
 *** Usage
 
