@@ -28,7 +28,11 @@ An Emacs minor mode that adds keyboard shortcuts to =php-mode= to send code from
 
 #+BEGIN_SRC emacs-lisp
 (quelpa '(php-boris-minor-mode :fetcher github :repo "steckerhalter/php-boris-minor-mode"))
-;; since the recipe is stored in melpa this also works:
+#+END_SRC
+
+Since the recipe is stored in melpa this also works:
+
+#+BEGIN_SRC emacs-lisp
 (quelpa 'php-boris-minor-mode)
 #+END_SRC
 
